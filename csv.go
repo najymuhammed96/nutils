@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func readCsv(fileName string, startIndex, numberOfColumns int) [][]interface{} {
+func ReadCsv(fileName string, startIndex, numberOfColumns int) [][]interface{} {
 	// Open the file
 	max := false
 	csvfile, err := os.Open(fileName)
