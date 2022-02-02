@@ -10,17 +10,23 @@ import (
 func InitDB(ip, port, dbname, user, password, driver string) (*sql.DB, error) {
 	var db *sql.DB
 	var err error
-	if driver == "mysql" {
+	switch driver {
+	case "mysql":
 		db, err = sql.Open("mysql", user+":"+password+"@tcp("+ip+":"+port+")/"+dbname+"?charset=utf8")
-	} else if driver == "mssql" {
-		connString := fmt.Sprintf("server=%s;user id=%s; password=%s;portNumber=%s;database=%s;encrypt=disable", ip, user, password, port, dbname)
-		db, err = sql.Open("mssql", connString)
-	} else {
-		db, err = sql.Open("mysql", user+":"+password+"@tcp("+ip+":"+port+")/"+dbname+"?charset=utf8")
+	case "mssql":
+		db, err = sql.Open("mssql", fmt.Sprintf("server=%s;user id=%s; password=%s;portNumber=%s;database=%s;encrypt=disable",
+			ip, user, password, port, dbname))
+	case "postgres":
+		db, err = sql.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			ip, port, user, password, dbname))
+	default:
+		err = fmt.Errorf("InitDB error: unsupported driver: %s", driver)
 	}
+
 	return db, err
 }
 
+// Use With MySQL, MariaDB
 func MapScan(rows *sql.Rows, columns []string) map[string]interface{} {
 	resMap := make(map[string]interface{})
 	records := make([]interface{}, len(columns))
@@ -53,6 +59,23 @@ func MapScan(rows *sql.Rows, columns []string) map[string]interface{} {
 				resMap[columns[i]] = fmt.Sprintf("%v", *val)
 			}
 		}
+	}
+	return resMap
+}
+
+// Use With PostgreSQL, MSSQL
+func ScanToMap(rows *sql.Rows, columns []string) map[string]interface{} {
+	resMap := make(map[string]interface{})
+	records := make([]interface{}, len(columns))
+	columnPointers := make([]interface{}, len(columns))
+	for i := range records {
+		columnPointers[i] = &records[i]
+	}
+
+	rows.Scan(columnPointers...)
+	for i := range columns {
+		val := columnPointers[i].(*interface{})
+		resMap[columns[i]] = *val
 	}
 	return resMap
 }
