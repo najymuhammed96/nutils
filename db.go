@@ -19,6 +19,8 @@ func InitDB(ip, port, dbname, user, password, driver string) (*sql.DB, error) {
 	case "postgres":
 		db, err = sql.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 			ip, port, user, password, dbname))
+	case "oracle":
+		db, err = sql.Open("oracle", fmt.Sprintf("oracle://%s:%s@%s:%s/%s", user, password, ip, port, dbname))
 	default:
 		err = fmt.Errorf("InitDB error: unsupported driver: %s", driver)
 	}
@@ -82,7 +84,7 @@ func ScanToMap(rows *sql.Rows, columns []string) map[string]interface{} {
 
 func PrepareAndInsertDataBulk(l [][]interface{}, f func(data [][]interface{}), max int) {
 	list := l
-	sublist := make([][]interface{}, 0)
+	var sublist [][]interface{}
 	for {
 		if len(list) > max {
 			sublist = list[:max]

@@ -21,6 +21,7 @@ func callURL(aurl, method string, headerMap map[string]string, body []byte, time
 	if err != nil {
 		return nil, err
 	}
+	req.Close = true
 	for key, value := range headerMap {
 		req.Header.Add(key, value)
 	}
