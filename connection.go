@@ -2,7 +2,7 @@ package nutils
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -32,5 +32,5 @@ func callURL(aurl, method string, headerMap map[string]string, body []byte, time
 	}
 	defer resp.Body.Close()
 
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
